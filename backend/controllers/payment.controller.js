@@ -47,8 +47,12 @@ export const createCheckoutSession=async(req,res)=>{
         const session = await stripe.checkout.sessions.create({
             payment_method_types:["card"],
             line_items:lineItems,
+            invoice_creation:{
+                enabled:true
+            },
             mode:"payment",
             success_url:`${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+            //Stripe automatically replaces {CHECKOUT_SESSION_ID} with the actual session ID.
             cancel_url:`${process.env.CLIENT_URL}/purchase-cancel`,
             discounts:coupon 
             ?[
@@ -74,7 +78,7 @@ export const createCheckoutSession=async(req,res)=>{
         if(totalAmount >=20000){
             await createNewCoupon(req.user._id);
         }
-
+       console.log("session",session)
         res.status(200).json({id:session.id, totalAmount:totalAmount/100})
     } catch (error) {
         console.log("Error processing checkout :", error);
